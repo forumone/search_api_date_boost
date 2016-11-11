@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * Implements hook_form_alter(). adds extra form elements to the search api
+ * edit index form.
+ */
+
+
+
+function search_api_date_boost_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'search_api_admin_index_edit') {
+    $index = $form_state['index'];
+    $form['options']['boost'] = array (
+      '#type' => 'checkbox',
+      '#title' => t('Boost Recent Content'),
+      '#default_value' => $index->options['boost'],
+      '#required' => FALSE,
+      '#weight' => 0,
+    );
+
+    $form['actions']['submit']['#submit'][] =  'search_api_date_boost_submit';
+    //array_unshift($form['actions']['submit']['#submit'], 'search_api_date_boost_submit' );
+
+
+  }
+}
+
+function search_api_date_boost_submit($form, $form_state) {
+  $index = $form_state['index'];
+  variable_set('isActive', $index->options['boost']);
+}
+
+$active = variable_get('isActive', $default = 500);
+dpm($active);
+
+
+
+
+/**
+ * Implements hook_search_api_solr_query_alter().
+ */
+function search_api_date_boost_search_api_solr_query_alter(&$call_args, SearchApiQueryInterface $query) {
+  if(!empty($call_args['query'])) {
+    // Boost more recently created content. This is taken directly from an apachesolr query with +10 boost.
+    $call_args['params']['bf'][] = 'recip(ms(NOW,ds_created),3.16e-11,1,1)^5';
+  }
+
+}
+
+
+

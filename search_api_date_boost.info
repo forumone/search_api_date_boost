@@ -1,0 +1,6 @@
+name = Search API Date Boost
+description = Extension to Search API that creates a UI that adds the ability to boost results with recent dates.
+dependencies[] = search_api
+core = 7.x
+package = Search
+
